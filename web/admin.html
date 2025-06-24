@@ -5,16 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Admin Panel - Renaldi Sentosa</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 20px;
-    }
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
+    body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 20px; }
+    h2 { text-align: center; color: #2c3e50; }
     #crudForm {
       display: none;
       border: 1px solid #ccc;
@@ -37,10 +29,7 @@
       padding: 10px;
       text-align: left;
     }
-    tr:hover {
-      background-color: #f9f9f9;
-      cursor: pointer;
-    }
+    tr:hover { background-color: #f9f9f9; cursor: pointer; }
     button {
       margin: 5px;
       padding: 8px 12px;
@@ -48,28 +37,18 @@
       border: none;
       cursor: pointer;
     }
-    #addBtn {
-      background: #3498db;
-      color: #fff;
-    }
-    #deleteBtn {
-      background: #e74c3c;
-      color: white;
-    }
-    #cancelBtn {
-      background: #7f8c8d;
-      color: white;
-    }
-    #crudForm button[type="submit"] {
-      background: #2ecc71;
-      color: white;
-    }
+    #addBtn { background: #3498db; color: #fff; }
+    #logoutBtn { background: #e67e22; color: #fff; float: right; }
+    #deleteBtn { background: #e74c3c; color: white; }
+    #cancelBtn { background: #7f8c8d; color: white; }
+    #crudForm button[type="submit"] { background: #2ecc71; color: white; }
   </style>
 </head>
 <body>
 
-<h2>Admin CRUD Panel - Renaldi Sentosa</h2>
+<h2>Admin Panel - CRUD Data</h2>
 <button id="addBtn">Tambah Data</button>
+<button id="logoutBtn">Logout</button>
 
 <table>
   <thead>
@@ -81,12 +60,12 @@
 <form id="crudForm">
   <input type="hidden" id="recordId" />
   <div>
-    <label for="judulInput">Judul:</label><br/>
-    <input type="text" id="judulInput" required style="width: 100%;" />
+    <label for="judul">Judul:</label><br/>
+    <input type="text" id="judul" required style="width: 100%;" />
   </div>
   <div style="margin-top:8px;">
-    <label for="isiInput">Isi:</label><br/>
-    <textarea id="isiInput" rows="4" style="width: 100%;"></textarea>
+    <label for="isi">Isi:</label><br/>
+    <textarea id="isi" rows="4" style="width: 100%;"></textarea>
   </div>
   <div style="margin-top:15px;">
     <button type="submit">Simpan</button>
@@ -98,113 +77,111 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const SUPABASE_URL = 'https://fcsnwmzrpwsabsqnscwj.supabase.co'
-  const SUPABASE_ANON_KEY =  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
+  const supabase = createClient(
+    'https://fcsnwmzrpwsabsqnscwj.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
+  )
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  const content = document.getElementById('content')
-
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-
-  const addBtn = document.getElementById('addBtn')
   const dataBody = document.getElementById('dataBody')
+  const addBtn = document.getElementById('addBtn')
+  const logoutBtn = document.getElementById('logoutBtn')
   const crudForm = document.getElementById('crudForm')
-  const recordIdInput = document.getElementById('recordId')
-  const judulInput = document.getElementById('judulInput')
-  const isiInput = document.getElementById('isiInput')
+  const recordId = document.getElementById('recordId')
+  const judul = document.getElementById('judul')
+  const isi = document.getElementById('isi')
   const deleteBtn = document.getElementById('deleteBtn')
   const cancelBtn = document.getElementById('cancelBtn')
 
-  // Batasi akses hanya admin
-  window.addEventListener('DOMContentLoaded', async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.email !== 'admin@example.com') {
-      alert('Akses ditolak. Hanya admin yang dapat membuka halaman ini.')
-      window.location.href = 'index.html'
-    } else {
-      loadData()
-    }
-  })
+  // Cek login terlebih dahulu
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+    alert('Silakan login terlebih dahulu.')
+    window.location.href = 'index.html'
+  }
 
-  // Load data
+  // Load data dari tabel
   async function loadData() {
-    const { data, error } = await supabase.from('web3').select('*').order('id')
-    if (error) {
-      alert('Gagal memuat data: ' + error.message)
-      return
-    }
+    const { data, error } = await supabase.from('web').select('*').order('id')
+    if (error) return alert('Gagal load data: ' + error.message)
 
     dataBody.innerHTML = ''
     data.forEach(row => {
       const tr = document.createElement('tr')
-      tr.dataset.id = row.id
-      tr.innerHTML = `<td>${row.id}</td><td>${row.judul}</td><td>${row.isi}</td>`
-      tr.addEventListener('click', () => showForm(row))
+      tr.innerHTML = `<td>${row.id}</td><td>${row.Judul}</td><td>${row.isi}</td>`
+      tr.onclick = () => showForm(row)
       dataBody.appendChild(tr)
     })
   }
 
+  // Tampilkan form
   function showForm(data = null) {
     if (data) {
-      recordIdInput.value = data.id
-      judulInput.value = data.judul
-      isiInput.value = data.isi
+      recordId.value = data.id
+      judul.value = data.Judul
+      isi.value = data.isi
       deleteBtn.style.display = 'inline-block'
     } else {
-      recordIdInput.value = ''
+      recordId.value = ''
       crudForm.reset()
       deleteBtn.style.display = 'none'
     }
     crudForm.style.display = 'block'
-    judulInput.focus()
+    judul.focus()
   }
 
+  // Sembunyikan form
   function hideForm() {
     crudForm.style.display = 'none'
-    recordIdInput.value = ''
     crudForm.reset()
+    recordId.value = ''
   }
 
+  // Simpan data (Insert/Update)
   async function saveData(e) {
     e.preventDefault()
-    const id = recordIdInput.value
-    const judul = judulInput.value.trim()
-    const isi = isiInput.value.trim()
+    const id = recordId.value
+    const data = { Judul: judul.value.trim(), isi: isi.value.trim() }
 
-    if (!judul || !isi) {
-      alert('Judul dan isi harus diisi!')
-      return
-    }
+    if (!data.Judul || !data.isi) return alert('Judul dan isi tidak boleh kosong.')
 
     if (id) {
-      const { error } = await supabase.from('web3').update({ judul, isi }).eq('id', id)
+      const { error } = await supabase.from('web').update(data).eq('id', id)
       if (error) return alert('Gagal update: ' + error.message)
     } else {
-      const { error } = await supabase.from('web3').insert([{ judul, isi }])
-      if (error) return alert('Gagal insert: ' + error.message)
+      const { error } = await supabase.from('web').insert([data])
+      if (error) return alert('Gagal tambah: ' + error.message)
     }
 
     hideForm()
     loadData()
   }
 
+  // Hapus data
   async function deleteData() {
-    const id = recordIdInput.value
-    if (!id) return
-    if (!confirm('Yakin ingin menghapus data ini?')) return
+    const id = recordId.value
+    if (!id || !confirm('Yakin ingin menghapus?')) return
 
-    const { error } = await supabase.from('web3').delete().eq('id', id)
-    if (error) return alert('Gagal menghapus: ' + error.message)
+    const { error } = await supabase.from('web').delete().eq('id', id)
+    if (error) return alert('Gagal hapus: ' + error.message)
 
     hideForm()
     loadData()
   }
 
-  addBtn.addEventListener('click', () => showForm(null))
-  crudForm.addEventListener('submit', saveData)
-  deleteBtn.addEventListener('click', deleteData)
-  cancelBtn.addEventListener('click', hideForm)
+  // Logout
+  logoutBtn.onclick = async () => {
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  }
+
+  // Event listener
+  addBtn.onclick = () => showForm(null)
+  deleteBtn.onclick = deleteData
+  cancelBtn.onclick = hideForm
+  crudForm.onsubmit = saveData
+
+  // Load data saat DOM ready
+  loadData()
 </script>
 
 </body>
