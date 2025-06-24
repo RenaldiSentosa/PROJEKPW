@@ -3,25 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin - Renaldi Sentosa</title>
+  <title>Admin Panel - Renaldi Sentosa</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f8; }
-    h2 { text-align: center; color: #2c3e50; }
-    #crudForm { display: none; border: 1px solid #ccc; padding: 15px; max-width: 600px; margin: 15px auto; background: #fff; border-radius: 6px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 15px; background: #fff; border-radius: 6px; overflow: hidden; }
-    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
-    tr:hover { background-color: #f9f9f9; cursor: pointer; }
-    button { margin: 5px; padding: 8px 12px; border-radius: 4px; border: none; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 20px;
+    }
+    h2 {
+      text-align: center;
+      color: #2c3e50;
+    }
+    #crudForm {
+      display: none;
+      border: 1px solid #ccc;
+      padding: 15px;
+      width: 100%;
+      max-width: 600px;
+      margin: 15px auto;
+      background: #fff;
+      border-radius: 6px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: left;
+    }
+    tr:hover {
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+    }
     #addBtn { background: #3498db; color: #fff; }
     #deleteBtn { background: #e74c3c; color: white; }
     #cancelBtn { background: #7f8c8d; color: white; }
     #crudForm button[type="submit"] { background: #2ecc71; color: white; }
+    #logoutBtn { float: right; background: #e67e22; color: white; }
   </style>
 </head>
 <body>
 
-<h2>Admin - CRUD Tabel web3</h2>
+<h2>Admin Panel - CRUD Data</h2>
 <button id="addBtn">Tambah Data</button>
+<button id="logoutBtn">Logout</button>
 
 <table>
   <thead>
@@ -56,6 +94,7 @@
   )
 
   const addBtn = document.getElementById('addBtn')
+  const logoutBtn = document.getElementById('logoutBtn')
   const dataBody = document.getElementById('dataBody')
   const crudForm = document.getElementById('crudForm')
   const recordIdInput = document.getElementById('recordId')
@@ -67,10 +106,9 @@
   async function loadData() {
     const { data, error } = await supabase.from('web3').select('*').order('id')
     if (error) {
-      alert('Gagal mengambil data: ' + error.message)
+      alert('Error loading data: ' + error.message)
       return
     }
-
     dataBody.innerHTML = ''
     data.forEach(row => {
       const tr = document.createElement('tr')
@@ -93,6 +131,7 @@
       deleteBtn.style.display = 'none'
     }
     crudForm.style.display = 'block'
+    nameInput.focus()
   }
 
   function hideForm() {
@@ -108,16 +147,16 @@
     const isi = emailInput.value.trim()
 
     if (!judul || !isi) {
-      alert('Judul dan Isi wajib diisi!')
+      alert('Judul dan Isi harus diisi!')
       return
     }
 
     if (id) {
       const { error } = await supabase.from('web3').update({ judul, isi }).eq('id', id)
-      if (error) return alert('Gagal update: ' + error.message)
+      if (error) return alert('Error update: ' + error.message)
     } else {
       const { error } = await supabase.from('web3').insert([{ judul, isi }])
-      if (error) return alert('Gagal insert: ' + error.message)
+      if (error) return alert('Error insert: ' + error.message)
     }
 
     hideForm()
@@ -130,18 +169,33 @@
     if (!confirm('Yakin ingin menghapus data ini?')) return
 
     const { error } = await supabase.from('web3').delete().eq('id', id)
-    if (error) return alert('Gagal menghapus: ' + error.message)
+    if (error) return alert('Error hapus: ' + error.message)
 
     hideForm()
     loadData()
   }
 
+  async function logout() {
+    await supabase.auth.signOut()
+    window.location.href = 'index.html'
+  }
+
+  // Cek apakah yang login adalah admin
+  window.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || user.email !== 'admin@example.com') {
+      alert('Akses ditolak. Hanya admin yang bisa membuka halaman ini.')
+      window.location.href = 'index.html'
+    } else {
+      loadData()
+    }
+  })
+
   addBtn.addEventListener('click', () => showForm(null))
   crudForm.addEventListener('submit', saveData)
   deleteBtn.addEventListener('click', deleteData)
   cancelBtn.addEventListener('click', hideForm)
-
-  window.addEventListener('DOMContentLoaded', loadData)
+  logoutBtn.addEventListener('click', logout)
 </script>
 
 </body>
