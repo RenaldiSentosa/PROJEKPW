@@ -3,88 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Admin Panel - Renaldi Sentosa</title>
+  <title>Admin - Renaldi Sentosa</title>
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      background: #f4f6f8;
-      padding: 20px;
-    }
-
-    h2 {
-      text-align: center;
-      color: #2c3e50;
-    }
-
-    #crudForm {
-      display: none;
-      border: 1px solid #ccc;
-      padding: 15px;
-      width: 100%;
-      max-width: 600px;
-      margin: 15px auto;
-      background: #fff;
-      border-radius: 6px;
-    }
-
-    table {
-      border-collapse: collapse;
-      width: 100%;
-      margin-top: 15px;
-      background: #fff;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-      text-align: left;
-    }
-
-    tr:hover {
-      background-color: #f9f9f9;
-      cursor: pointer;
-    }
-
-    button {
-      margin: 5px;
-      padding: 8px 12px;
-      border-radius: 4px;
-      border: none;
-      cursor: pointer;
-    }
-
-    #addBtn {
-      background: #3498db;
-      color: #fff;
-    }
-
-    #deleteBtn {
-      background: #e74c3c;
-      color: white;
-    }
-
-    #cancelBtn {
-      background: #7f8c8d;
-      color: white;
-    }
-
-    #crudForm button[type="submit"] {
-      background: #2ecc71;
-      color: white;
-    }
-
-    .hidden {
-      display: none;
-    }
+    body { font-family: Arial, sans-serif; margin: 20px; background: #f4f6f8; }
+    h2 { text-align: center; color: #2c3e50; }
+    #crudForm { display: none; border: 1px solid #ccc; padding: 15px; max-width: 600px; margin: 15px auto; background: #fff; border-radius: 6px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 15px; background: #fff; border-radius: 6px; overflow: hidden; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    tr:hover { background-color: #f9f9f9; cursor: pointer; }
+    button { margin: 5px; padding: 8px 12px; border-radius: 4px; border: none; cursor: pointer; }
+    #addBtn { background: #3498db; color: #fff; }
+    #deleteBtn { background: #e74c3c; color: white; }
+    #cancelBtn { background: #7f8c8d; color: white; }
+    #crudForm button[type="submit"] { background: #2ecc71; color: white; }
   </style>
 </head>
 <body>
-<h2>Admin Panel - Renaldi Sentosa</h2>
+
+<h2>Admin - CRUD Tabel web3</h2>
 <button id="addBtn">Tambah Data</button>
-<button id="logoutBtn" style="float: right;">Logout</button>
 
 <table>
   <thead>
@@ -113,14 +50,12 @@
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const SUPABASE_URL = 'https://fcsnwmzrpwsabsqnscwj.supabase.co'
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
-
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
+  const supabase = createClient(
+    'https://fcsnwmzrpwsabsqnscwj.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
+  )
 
   const addBtn = document.getElementById('addBtn')
-  const logoutBtn = document.getElementById('logoutBtn')
   const dataBody = document.getElementById('dataBody')
   const crudForm = document.getElementById('crudForm')
   const recordIdInput = document.getElementById('recordId')
@@ -129,23 +64,10 @@
   const deleteBtn = document.getElementById('deleteBtn')
   const cancelBtn = document.getElementById('cancelBtn')
 
-  let currentUser = null
-
-  async function checkAdmin() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user || user.email !== 'admin@example.com') {
-      alert('Akses hanya untuk admin.')
-      window.location.href = '/PROJEKPW/Login/index.html'
-      return
-    }
-    currentUser = user
-    loadData()
-  }
-
   async function loadData() {
     const { data, error } = await supabase.from('web3').select('*').order('id')
     if (error) {
-      alert('Gagal memuat data: ' + error.message)
+      alert('Gagal mengambil data: ' + error.message)
       return
     }
 
@@ -175,6 +97,7 @@
 
   function hideForm() {
     crudForm.style.display = 'none'
+    recordIdInput.value = ''
     crudForm.reset()
   }
 
@@ -184,7 +107,10 @@
     const judul = nameInput.value.trim()
     const isi = emailInput.value.trim()
 
-    if (!judul || !isi) return alert('Semua field harus diisi.')
+    if (!judul || !isi) {
+      alert('Judul dan Isi wajib diisi!')
+      return
+    }
 
     if (id) {
       const { error } = await supabase.from('web3').update({ judul, isi }).eq('id', id)
@@ -201,28 +127,22 @@
   async function deleteData() {
     const id = recordIdInput.value
     if (!id) return
-    if (!confirm('Yakin ingin menghapus?')) return
+    if (!confirm('Yakin ingin menghapus data ini?')) return
 
     const { error } = await supabase.from('web3').delete().eq('id', id)
-    if (error) return alert('Gagal hapus: ' + error.message)
+    if (error) return alert('Gagal menghapus: ' + error.message)
 
     hideForm()
     loadData()
   }
 
-  async function logout() {
-    await supabase.auth.signOut()
-    window.location.href = '/PROJEKPW/Login/index.html'
-  }
-
-  // Event listeners
   addBtn.addEventListener('click', () => showForm(null))
   crudForm.addEventListener('submit', saveData)
   deleteBtn.addEventListener('click', deleteData)
   cancelBtn.addEventListener('click', hideForm)
-  logoutBtn.addEventListener('click', logout)
 
-  window.addEventListener('DOMContentLoaded', checkAdmin)
+  window.addEventListener('DOMContentLoaded', loadData)
 </script>
+
 </body>
 </html>
