@@ -74,6 +74,7 @@
       margin: 5px;
       border-radius: 5px;
       border: 1px solid #ccc;
+      width: 80%;
     }
   </style>
 </head>
@@ -93,15 +94,15 @@
   </div>
 
   <div class="action-buttons">
-    <button id="showLoginBtn">Login</button>
+    <button id="showLoginBtn">Login untuk akses data</button>
     <button id="logoutBtn" style="display: none;">Logout</button>
   </div>
 
   <div id="login-form" style="display: none;">
     <h3>Masukkan Email & Password</h3>
-    <input type="email" id="email" placeholder="Email"><br>
-    <input type="password" id="password" placeholder="Password"><br>
-    <button id="loginBtn">Login</button>
+    <input type="email" id="email" placeholder="Email" /><br />
+    <input type="password" id="password" placeholder="Password" /><br />
+    <button type="button" id="loginBtn">Login Manual</button>
   </div>
 
   <div id="content"></div>
@@ -119,9 +120,8 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const SUPABASE_URL = 'https://fcsnwmzrpwsabsqnscwj.supabase.co'
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
-  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   const content = document.getElementById('content')
 
@@ -136,15 +136,15 @@
       return
     }
 
+    // Arahkan admin@example.com ke admin.html
     if (email === 'admin@example.com') {
       window.location.href = 'admin.html'
-      return
+    } else {
+      document.getElementById('login-form').style.display = 'none'
+      document.getElementById('showLoginBtn').style.display = 'none'
+      document.getElementById('logoutBtn').style.display = 'inline-block'
+      loadData()
     }
-
-    document.getElementById('login-form').style.display = 'none'
-    document.getElementById('showLoginBtn').style.display = 'none'
-    document.getElementById('logoutBtn').style.display = 'inline-block'
-    loadData()
   }
 
   async function logout() {
@@ -162,7 +162,6 @@
     }
 
     const { data, error } = await supabase.from('web3').select('*').order('id', { ascending: true })
-
     if (error) {
       alert('Error loading data: ' + error.message)
       return
@@ -189,14 +188,18 @@
   document.getElementById('loginBtn').addEventListener('click', login)
   document.getElementById('logoutBtn').addEventListener('click', logout)
 
+  // Cek apakah sudah login sebelumnya
   window.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user?.email === 'admin@example.com') {
-      window.location.href = 'admin.html'
-    } else if (user) {
-      document.getElementById('showLoginBtn').style.display = 'none'
-      document.getElementById('logoutBtn').style.display = 'inline-block'
-      loadData()
+    if (user) {
+      const email = user.email
+      if (email === 'admin@example.com') {
+        window.location.href = 'admin.html'
+      } else {
+        document.getElementById('showLoginBtn').style.display = 'none'
+        document.getElementById('logoutBtn').style.display = 'inline-block'
+        loadData()
+      }
     }
   })
 </script>
