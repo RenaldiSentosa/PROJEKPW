@@ -89,7 +89,7 @@
   <div class="header-text">
     <h1>Renaldi Sentosa</h1>
     <p class="subtitle">He/Him • Elit Cees</p>
-    <p>Jakarta, Indonesia • <a href="https://Renaldi.Sentosa.com">Renaldi.Sentosa.com</a></p>
+    <p>Jakarta, Indonesia • <a href="#">RenaldiSentosa.com</a></p>
     <p><strong>Renaldi Langit Solusi</strong> — Universitas Ipwija</p>
   </div>
 
@@ -120,7 +120,7 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const SUPABASE_URL = 'https://fcsnwmzrpwsabsqnscwj.supabase.co'
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   const content = document.getElementById('content')
@@ -136,14 +136,23 @@
       return
     }
 
-    document.getElementById('login-form').style.display = 'none'
-    document.getElementById('showLoginBtn').style.display = 'none'
-    document.getElementById('logoutBtn').style.display = 'inline-block'
-    loadData()
+    // Simpan email user ke localStorage
+    localStorage.setItem('user_email', email)
+
+    // Redirect jika admin
+    if (email === 'admin@example.com') {
+      window.location.href = 'admin.html'
+    } else {
+      document.getElementById('login-form').style.display = 'none'
+      document.getElementById('showLoginBtn').style.display = 'none'
+      document.getElementById('logoutBtn').style.display = 'inline-block'
+      loadData()
+    }
   }
 
   async function logout() {
     await supabase.auth.signOut()
+    localStorage.removeItem('user_email')
     content.innerHTML = '<p>Logout berhasil.</p>'
     document.getElementById('showLoginBtn').style.display = 'inline-block'
     document.getElementById('logoutBtn').style.display = 'none'
@@ -157,12 +166,12 @@
     }
 
     const { data, error } = await supabase
-      .from('web3')
+      .from('web3') // nama tabel
       .select('*')
       .order('id', { ascending: true })
 
     if (error) {
-      alert('Error loading data: ' + error.message)
+      alert('Gagal memuat data: ' + error.message)
       return
     }
 
@@ -175,7 +184,6 @@
         </div>
       `
     })
-
     content.innerHTML = out
   }
 
@@ -189,10 +197,16 @@
 
   window.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await supabase.auth.getUser()
+    const savedEmail = localStorage.getItem('user_email')
+
     if (user) {
-      document.getElementById('showLoginBtn').style.display = 'none'
-      document.getElementById('logoutBtn').style.display = 'inline-block'
-      loadData()
+      if (savedEmail === 'admin@example.com') {
+        window.location.href = 'admin.html'
+      } else {
+        document.getElementById('showLoginBtn').style.display = 'none'
+        document.getElementById('logoutBtn').style.display = 'inline-block'
+        loadData()
+      }
     }
   })
 </script>
