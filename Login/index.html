@@ -93,8 +93,7 @@
   </div>
 
   <div class="action-buttons">
-    <button id="showLoginUserBtn">Login sebagai User</button>
-    <button id="showLoginAdminBtn">Login sebagai Admin</button>
+    <button id="showLoginBtn">Login</button>
     <button id="logoutBtn" style="display: none;">Logout</button>
   </div>
 
@@ -120,26 +119,12 @@
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const SUPABASE_URL = 'https://fcsnwmzrpwsabsqnscwj.supabase.co'
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY)
   const content = document.getElementById('content')
 
-  const adminEmails = ['admin@example.com] // ganti dengan akun admin asli
-
-  let loginType = 'user'
-
-  document.getElementById('showLoginUserBtn').addEventListener('click', () => {
-    loginType = 'user'
-    document.getElementById('login-form').style.display = 'block'
-  })
-
-  document.getElementById('showLoginAdminBtn').addEventListener('click', () => {
-    loginType = 'admin'
-    document.getElementById('login-form').style.display = 'block'
-  })
-
-  document.getElementById('loginBtn').addEventListener('click', async () => {
+  async function login() {
     const email = document.getElementById('email').value
     const password = document.getElementById('password').value
 
@@ -150,34 +135,35 @@
       return
     }
 
-    if (loginType === 'admin') {
-      if (adminEmails.includes(email)) {
-        window.location.href = 'admin.html'
-      } else {
-        alert('Bukan akun admin')
-        return
-      }
-    } else {
-      document.getElementById('login-form').style.display = 'none'
-      document.getElementById('showLoginUserBtn').style.display = 'none'
-      document.getElementById('showLoginAdminBtn').style.display = 'none'
-      document.getElementById('logoutBtn').style.display = 'inline-block'
-      loadData()
+    if (email === 'admin@example.com') {
+      window.location.href = 'admin.html'
+      return
     }
-  })
 
-  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    document.getElementById('login-form').style.display = 'none'
+    document.getElementById('showLoginBtn').style.display = 'none'
+    document.getElementById('logoutBtn').style.display = 'inline-block'
+    loadData()
+  }
+
+  async function logout() {
     await supabase.auth.signOut()
     content.innerHTML = '<p>Logout berhasil.</p>'
-    document.getElementById('showLoginUserBtn').style.display = 'inline-block'
-    document.getElementById('showLoginAdminBtn').style.display = 'inline-block'
+    document.getElementById('showLoginBtn').style.display = 'inline-block'
     document.getElementById('logoutBtn').style.display = 'none'
-  })
+  }
 
   async function loadData() {
-    const { data, error } = await supabase.from('web3').select('*').order('id')
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+      content.innerHTML = '<p>Silakan login untuk melihat data.</p>'
+      return
+    }
+
+    const { data, error } = await supabase.from('web3').select('*').order('id', { ascending: true })
+
     if (error) {
-      content.innerHTML = '<p>Gagal memuat data.</p>'
+      alert('Error loading data: ' + error.message)
       return
     }
 
@@ -190,8 +176,28 @@
         </div>
       `
     })
+
     content.innerHTML = out
   }
+
+  document.getElementById('showLoginBtn').addEventListener('click', () => {
+    document.getElementById('login-form').style.display = 'block'
+    document.getElementById('showLoginBtn').style.display = 'none'
+  })
+
+  document.getElementById('loginBtn').addEventListener('click', login)
+  document.getElementById('logoutBtn').addEventListener('click', logout)
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user?.email === 'admin@example.com') {
+      window.location.href = 'admin.html'
+    } else if (user) {
+      document.getElementById('showLoginBtn').style.display = 'none'
+      document.getElementById('logoutBtn').style.display = 'inline-block'
+      loadData()
+    }
+  })
 </script>
 </body>
 </html>
