@@ -88,12 +88,13 @@
   <div class="header-text">
     <h1>Renaldi Sentosa</h1>
     <p class="subtitle">He/Him • Elit Cees</p>
-    <p>Jakarta, Indonesia • <a href="#">RenaldiSentosa.com</a></p>
+    <p>Jakarta, Indonesia • <a href="https://Renaldi.Sentosa.com">Renaldi.Sentosa.com</a></p>
     <p><strong>Renaldi Langit Solusi</strong> — Universitas Ipwija</p>
   </div>
 
   <div class="action-buttons">
-    <button id="showLoginBtn">Login sebagai User</button>
+    <button id="loginUserBtn">Login sebagai User</button>
+    <button id="loginAdminBtn">Login sebagai Admin</button>
     <button id="logoutBtn" style="display: none;">Logout</button>
   </div>
 
@@ -101,7 +102,7 @@
     <h3>Masukkan Email & Password</h3>
     <input type="email" id="email" placeholder="Email"><br>
     <input type="password" id="password" placeholder="Password"><br>
-    <button id="loginBtn">Login Manual</button>
+    <button id="submitLoginBtn">Login</button>
   </div>
 
   <div id="content"></div>
@@ -123,82 +124,72 @@
     'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZjc253bXpycHdzYWJzcW5zY3dqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY1MTUwNDUsImV4cCI6MjA2MjA5MTA0NX0.QKBmiZGCbP79v75XE4VTG0TDmGZV-iC2vE0gOzLMeH0'
   )
 
-  const content = document.getElementById('content')
+  let currentLoginType = '' // 'admin' atau 'user'
 
-  async function login() {
+  const loginUserBtn = document.getElementById('loginUserBtn')
+  const loginAdminBtn = document.getElementById('loginAdminBtn')
+  const submitLoginBtn = document.getElementById('submitLoginBtn')
+  const logoutBtn = document.getElementById('logoutBtn')
+
+  loginUserBtn.addEventListener('click', () => {
+    currentLoginType = 'user'
+    document.getElementById('login-form').style.display = 'block'
+  })
+
+  loginAdminBtn.addEventListener('click', () => {
+    currentLoginType = 'admin'
+    document.getElementById('login-form').style.display = 'block'
+  })
+
+  submitLoginBtn.addEventListener('click', async () => {
     const email = document.getElementById('email').value
     const password = document.getElementById('password').value
 
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) return alert('Login gagal: ' + error.message)
 
-    if (error) {
-      alert('Login gagal: ' + error.message)
-      return
-    }
-
-    if (email === 'admin@example.com') {
+    if (currentLoginType === 'admin' && email === 'admin@example.com') {
       window.location.href = 'admin.html'
-    } else {
+    } else if (currentLoginType === 'user') {
       document.getElementById('login-form').style.display = 'none'
-      document.getElementById('showLoginBtn').style.display = 'none'
-      document.getElementById('logoutBtn').style.display = 'inline-block'
+      loginUserBtn.style.display = 'none'
+      loginAdminBtn.style.display = 'none'
+      logoutBtn.style.display = 'inline-block'
       loadData()
+    } else {
+      alert('Anda bukan admin.')
+      await supabase.auth.signOut()
     }
-  }
-
-  async function logout() {
-    await supabase.auth.signOut()
-    content.innerHTML = '<p>Logout berhasil.</p>'
-    document.getElementById('showLoginBtn').style.display = 'inline-block'
-    document.getElementById('logoutBtn').style.display = 'none'
-  }
-
-  async function loadData() {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      content.innerHTML = '<p>Silakan login untuk melihat data.</p>'
-      return
-    }
-
-    const { data, error } = await supabase
-      .from('web3')
-      .select('*')
-      .order('id', { ascending: true })
-
-    if (error) {
-      alert('Error loading data: ' + error.message)
-      return
-    }
-
-    let out = ''
-    data.forEach(row => {
-      out += `
-        <div class="content-card">
-          <h2>${row.judul}</h2>
-          <p>${row.isi}</p>
-        </div>
-      `
-    })
-
-    content.innerHTML = out
-  }
-
-  document.getElementById('showLoginBtn').addEventListener('click', () => {
-    document.getElementById('login-form').style.display = 'block'
-    document.getElementById('showLoginBtn').style.display = 'none'
   })
 
-  document.getElementById('loginBtn').addEventListener('click', login)
-  document.getElementById('logoutBtn').addEventListener('click', logout)
+  logoutBtn.addEventListener('click', async () => {
+    await supabase.auth.signOut()
+    location.reload()
+  })
 
+  async function loadData() {
+    const { data, error } = await supabase.from('web3').select('*').order('id')
+    if (error) return alert('Gagal memuat data: ' + error.message)
+
+    const content = document.getElementById('content')
+    content.innerHTML = data.map(row => `
+      <div class="content-card">
+        <h2>${row.judul}</h2>
+        <p>${row.isi}</p>
+      </div>
+    `).join('')
+  }
+
+  // Cek apakah user sudah login sebelumnya
   window.addEventListener('DOMContentLoaded', async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       if (user.email === 'admin@example.com') {
         window.location.href = 'admin.html'
       } else {
-        document.getElementById('showLoginBtn').style.display = 'none'
-        document.getElementById('logoutBtn').style.display = 'inline-block'
+        loginUserBtn.style.display = 'none'
+        loginAdminBtn.style.display = 'none'
+        logoutBtn.style.display = 'inline-block'
         loadData()
       }
     }
