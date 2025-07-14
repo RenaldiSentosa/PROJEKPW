@@ -372,7 +372,7 @@
     if (!prodiValid.includes(prodi.toLowerCase()))
       return alert('Prodi tidak valid. Pilih: ' + prodiValid.join(', '));
 
-    const penyakitTerlarang = ['asma','jantung','cedera','kanker', 'patah tulang', 'tuli', 'buta'];
+    const penyakitTerlarang = ['asma','jantung','cedera','kanker'];
     const isFisik = selectedUKM.kategori?.toLowerCase() === 'fisik';
     if (isFisik && penyakitTerlarang.includes(penyakit))
       return alert('Karena penyakit dan UKM fisik, Anda tidak dapat mendaftar.');
