@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Daftar UKM Universitas Ipwija</title>
+  <meta name="description" content="Pendaftaran Unit Kegiatan Mahasiswa Universitas IPWIJA.">
+  <title>Daftar UKM Universitas IPWIJA</title>
   <style>
     body {
       font-family: 'Georgia', serif;
@@ -189,6 +190,9 @@
       border-radius: 8px;
       width: 100%;
       margin-bottom: 12px;
+      max-width: 500px;
+      display: block;
+      box-sizing: border-box;
     }
 
     .modal-content button {
@@ -212,7 +216,7 @@
 <div class="container">
   <div style="text-align: center;">
     <img src="https://cdn.s.id/images/d80a34be-302e-4667-9e50-452d903e25b1_1000x1000.png" alt="Logo UKM" style="max-width: 150px; margin-bottom: 10px;">
-    <h1>Pendaftaran UKM Universitas Ipwija</h1>
+    <h1>Pendaftaran UKM Universitas IPWIJA</h1>
   </div>
 
   <div class="auth-section">
@@ -229,33 +233,11 @@
   <input type="text" id="filterInput" placeholder="Cari nama UKM..." style="display:none;">
   <div class="ukm-list" id="ukmList"></div>
   <div class="group-info" id="groupInfo">
-    <th>
+  <br> 
       ✉ UKMUNIP@gmail.com ✆082145896729
-    </th> 
-    <br> 
     <br>
-    <th>
-      Kelompok 4 : 
-    </th>
-    <br>
-    <th>
-      M.Tanzil Kirami Hamdi
-    </th>
-    <br>
-    <th>
-      Renaldi Sentosa
-    </th>
-    <br>
-    <th>
-      Gizza Farah Nadifa
-    </th>
-    <br>
-    <th>
-       Cristian Ari Prasena
-    </th>
 </div>
 
-<!-- Modal Form -->
 <div class="modal" id="formModal">
   <div class="modal-content">
     <h3>Form Pendaftaran UKM</h3>
@@ -276,8 +258,6 @@
   let currentLoginType = '', selectedUKM = null;
   let currentUserEmail = null;
 
-  const loginUserBtn = document.getElementById('loginUserBtn');
-  const loginAdminBtn = document.getElementById('loginAdminBtn');
   const logoutBtn = document.getElementById('logoutBtn');
   const submitLoginBtn = document.getElementById('submitLoginBtn');
   const loginForm = document.getElementById('loginForm');
@@ -308,7 +288,6 @@
     logoutBtn.style.display = 'inline-block';
     groupInfo.style.display = 'none';
 
-    // Deteksi admin
     if (email === 'admin@example.com') {
       window.location.href = 'admin.html';
     } else {
@@ -372,7 +351,7 @@
     if (!prodiValid.includes(prodi.toLowerCase()))
       return alert('Prodi tidak valid. Pilih: ' + prodiValid.join(', '));
 
-    const penyakitTerlarang = ['asma','jantung','cedera','kanker', 'patah tulang', 'tuli', 'buta'];
+    const penyakitTerlarang = ['asma','jantung','cedera','kanker','tuli', 'buta'];
     const isFisik = selectedUKM.kategori?.toLowerCase() === 'fisik';
     if (isFisik && penyakitTerlarang.includes(penyakit))
       return alert('Karena penyakit dan UKM fisik, Anda tidak dapat mendaftar.');
@@ -415,8 +394,6 @@
       if (user.email === 'admin@example.com') {
         window.location.href = 'admin.html';
       } else {
-        loginUserBtn.style.display = 'none';
-        loginAdminBtn.style.display = 'none';
         logoutBtn.style.display = 'inline-block';
         groupInfo.style.display = 'none';
         filterInput.style.display = 'block';
